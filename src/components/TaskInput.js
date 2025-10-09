@@ -31,7 +31,7 @@ const TaskInput = ({ onAddTask }) => {
             onSubmitEditing={handleSubmit}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            multiline={false}
+            multiline={true}
             style={styles.textInput}
             mode="flat"
             placeholder="Add a new task..."
@@ -40,6 +40,7 @@ const TaskInput = ({ onAddTask }) => {
             underlineColor="transparent"
             activeUnderlineColor="transparent"
             contentStyle={styles.inputContent}
+            textAlignVertical="top"
           />
           {input.trim() && (
             <TouchableOpacity
@@ -53,12 +54,6 @@ const TaskInput = ({ onAddTask }) => {
             </TouchableOpacity>
           )}
         </View>
-      </View>
-      
-      <View style={styles.suggestionContainer}>
-        <Text variant="bodySmall" style={styles.suggestionText}>
-          Try: "Buy milk tomorrow" or "Call John by Friday"
-        </Text>
       </View>
     </View>
   );
@@ -91,7 +86,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
@@ -100,6 +95,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     fontSize: 16,
     fontWeight: '500',
+    minHeight: 24,
+    maxHeight: 120,
   },
   inputContent: {
     paddingVertical: 0,
@@ -107,6 +104,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginLeft: 12,
+    marginTop: 2,
   },
   submitGradient: {
     width: 40,
@@ -120,15 +118,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  suggestionContainer: {
-    marginTop: 12,
-    paddingHorizontal: 4,
-  },
-  suggestionText: {
-    color: '#6b7280',
-    fontStyle: 'italic',
-    textAlign: 'center',
   },
 });
 

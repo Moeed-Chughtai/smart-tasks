@@ -9,7 +9,6 @@ export const initDatabase = () => {
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         dueDate TEXT,
-        priority TEXT NOT NULL DEFAULT 'normal',
         completed INTEGER NOT NULL DEFAULT 0,
         createdAt TEXT NOT NULL
       );
@@ -23,12 +22,12 @@ export const initDatabase = () => {
 
 export const addTask = (task) => {
   try {
-    const { id, title, dueDate, priority, completed } = task;
+    const { id, title, dueDate, completed } = task;
     const createdAt = new Date().toISOString();
     
     db.runSync(
-      'INSERT INTO tasks (id, title, dueDate, priority, completed, createdAt) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, title, dueDate, priority, completed ? 1 : 0, createdAt]
+      'INSERT INTO tasks (id, title, dueDate, completed, createdAt) VALUES (?, ?, ?, ?, ?)',
+      [id, title, dueDate, completed ? 1 : 0, createdAt]
     );
     console.log('Task added successfully');
   } catch (error) {
@@ -40,14 +39,13 @@ export const addTask = (task) => {
 export const getTasks = () => {
   try {
     const result = db.getAllSync(
-      'SELECT * FROM tasks ORDER BY completed ASC, dueDate ASC, priority DESC, createdAt ASC'
+      'SELECT * FROM tasks ORDER BY completed ASC, dueDate ASC, createdAt ASC'
     );
     
     const tasks = result.map(row => ({
       id: row.id,
       title: row.title,
       dueDate: row.dueDate,
-      priority: row.priority,
       completed: Boolean(row.completed),
       createdAt: row.createdAt
     }));

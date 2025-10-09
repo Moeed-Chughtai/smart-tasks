@@ -5,7 +5,7 @@ import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { initDatabase, addTask, getTasks, updateTask, deleteTask } from './src/database/database';
-import { parseTaskInput, formatDueDate, getPriorityColor, getPriorityLabel } from './src/utils/taskParser';
+import { parseTaskInput, formatDueDate } from './src/utils/taskParser';
 import { createTask, sortTasks, groupTasksByDate } from './src/types/Task';
 import TaskInput from './src/components/TaskInput';
 import TaskList from './src/components/TaskList';
@@ -15,8 +15,12 @@ const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#6200ee',
-    accent: '#03dac4',
+    primary: '#667eea',
+    accent: '#764ba2',
+    background: '#f8fafc',
+    surface: '#ffffff',
+    text: '#1f2937',
+    onSurface: '#374151',
   },
 };
 
@@ -129,11 +133,12 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8fafc',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f8fafc',
   },
 });

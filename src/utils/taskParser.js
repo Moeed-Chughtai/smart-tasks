@@ -11,19 +11,6 @@ export const parseTaskInput = (input) => {
   // Parse date using chrono-node
   const parsedDate = chrono.parseDate(trimmedInput);
   
-  // Detect priority based on urgency keywords
-  const urgencyKeywords = ['asap', 'urgent', 'immediately', 'now', 'emergency', 'critical'];
-  const lowPriorityKeywords = ['someday', 'eventually', 'when possible', 'low priority'];
-  
-  const lowerInput = trimmedInput.toLowerCase();
-  let priority = 'normal';
-  
-  if (urgencyKeywords.some(keyword => lowerInput.includes(keyword))) {
-    priority = 'high';
-  } else if (lowPriorityKeywords.some(keyword => lowerInput.includes(keyword))) {
-    priority = 'low';
-  }
-  
   // Remove date-related phrases from the title
   let title = trimmedInput;
   let dueDate = null;
@@ -63,7 +50,6 @@ export const parseTaskInput = (input) => {
     id,
     title,
     dueDate,
-    priority,
     completed: false
   };
 };
@@ -86,31 +72,7 @@ export const formatDueDate = (dueDateString) => {
   }
 };
 
-export const getPriorityColor = (priority) => {
-  switch (priority) {
-    case 'high':
-      return '#f44336'; // Red
-    case 'normal':
-      return '#ff9800'; // Orange
-    case 'low':
-      return '#4caf50'; // Green
-    default:
-      return '#9e9e9e'; // Grey
-  }
-};
-
-export const getPriorityLabel = (priority) => {
-  switch (priority) {
-    case 'high':
-      return 'High';
-    case 'normal':
-      return 'Normal';
-    case 'low':
-      return 'Low';
-    default:
-      return 'Normal';
-  }
-};
+// Removed priority functions as we no longer use priority system
 
 const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);

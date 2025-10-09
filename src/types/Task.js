@@ -1,17 +1,10 @@
 // Task data model and validation
 
-export const TaskPriority = {
-  HIGH: 'high',
-  NORMAL: 'normal',
-  LOW: 'low'
-};
-
 export const createTask = (data) => {
   const {
     id,
     title,
     dueDate = null,
-    priority = TaskPriority.NORMAL,
     completed = false,
     createdAt = new Date().toISOString()
   } = data;
@@ -19,11 +12,6 @@ export const createTask = (data) => {
   // Validate required fields
   if (!id || !title) {
     throw new Error('Task must have an id and title');
-  }
-
-  // Validate priority
-  if (!Object.values(TaskPriority).includes(priority)) {
-    throw new Error(`Invalid priority: ${priority}`);
   }
 
   // Validate dueDate if provided
@@ -35,7 +23,6 @@ export const createTask = (data) => {
     id: String(id),
     title: String(title).trim(),
     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-    priority: String(priority),
     completed: Boolean(completed),
     createdAt: String(createdAt)
   };
@@ -69,14 +56,6 @@ export const sortTasks = (tasks) => {
       return -1;
     } else if (!a.dueDate && b.dueDate) {
       return 1;
-    }
-
-    // Then, sort by priority (high first)
-    const priorityOrder = { high: 3, normal: 2, low: 1 };
-    const priorityA = priorityOrder[a.priority] || 2;
-    const priorityB = priorityOrder[b.priority] || 2;
-    if (priorityA !== priorityB) {
-      return priorityB - priorityA;
     }
 
     // Finally, sort by creation date (oldest first)

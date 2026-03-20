@@ -1,123 +1,91 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import { TextInput, Text } from 'react-native-paper';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 const TaskInput = ({ onAddTask }) => {
   const [input, setInput] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
+  const [focused, setFocused] = useState(false);
 
-  const handleSubmit = () => {
-    if (!input.trim()) return;
-
-    setIsSubmitting(true);
-    try {
-      onAddTask(input.trim());
-      setInput('');
-    } catch (error) {
-      // Error handling is done in the parent component
-    } finally {
-      setIsSubmitting(false);
-    }
+  const submit = () => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    onAddTask(trimmed);
+    setInput('');
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.inputContainer, isFocused && styles.inputContainerFocused]}>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            value={input}
-            onChangeText={setInput}
-            onSubmitEditing={handleSubmit}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            multiline={true}
-            style={styles.textInput}
-            mode="flat"
-            placeholder="Add a new task..."
-            placeholderTextColor="#9ca3af"
-            disabled={isSubmitting}
-            underlineColor="transparent"
-            activeUnderlineColor="transparent"
-            contentStyle={styles.inputContent}
-            textAlignVertical="top"
-          />
-          {input.trim() && (
-            <TouchableOpacity
-              onPress={handleSubmit}
-              disabled={isSubmitting}
-              style={styles.submitButton}
-            >
-              <View style={styles.submitGradient}>
-                <Text style={styles.submitText}>✓</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-        </View>
+    <View style={styles.wrap}>
+      <View style={[styles.card, focused && styles.cardFocused]}>
+        <TextInput
+          value={input}
+          onChangeText={setInput}
+          onSubmitEditing={submit}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder="Add a task..."
+          placeholderTextColor="#a0a5b0"
+          style={styles.input}
+          multiline
+          blurOnSubmit
+          textAlignVertical="center"
+          returnKeyType="done"
+        />
+        {input.trim().length > 0 && (
+          <TouchableOpacity onPress={submit} style={styles.addBtn} activeOpacity={0.7}>
+            <Text style={styles.addLabel}>Add</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  wrap: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
-  inputContainer: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  inputContainerFocused: {
-    borderColor: '#667eea',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  inputWrapper: {
+  card: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  textInput: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    fontSize: 16,
-    fontWeight: '500',
-    minHeight: 24,
-    maxHeight: 120,
-  },
-  inputContent: {
-    paddingVertical: 0,
-    marginVertical: 0,
-  },
-  submitButton: {
-    marginLeft: 12,
-    marginTop: 2,
-  },
-  submitGradient: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#667eea',
-    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e5ea',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    minHeight: 46,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  submitText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+  cardFocused: {
+    borderColor: '#4f6ef7',
+    shadowColor: '#4f6ef7',
+    shadowOpacity: 0.1,
+  },
+  input: {
+    flex: 1,
+    color: '#1a1d26',
+    fontSize: 15,
+    fontWeight: '400',
+    padding: 0,
+    maxHeight: 80,
+  },
+  addBtn: {
+    marginLeft: 10,
+    backgroundColor: '#4f6ef7',
+    borderRadius: 7,
+    paddingVertical: 7,
+    paddingHorizontal: 16,
+  },
+  addLabel: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
 });
 

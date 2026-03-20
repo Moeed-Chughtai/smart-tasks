@@ -1,144 +1,104 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
+import { StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import { initDatabase, addTask, getTasks, updateTask, deleteTask } from './src/database/database';
-import { parseTaskInput, formatDueDate } from './src/utils/taskParser';
-import { createTask, sortTasks, groupTasksByDate } from './src/types/Task';
+import { initDatabase, addTask, getTasks, updateTask, deleteTask, moveTaskToTab, reorderTasks } from './src/database/database';
+import { parseTaskInput } from './src/utils/taskParser';
+import { createTask } from './src/types/Task';
 import TaskInput from './src/components/TaskInput';
 import TaskList from './src/components/TaskList';
 import Header from './src/components/Header';
 
-const theme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: '#667eea',
-    accent: '#764ba2',
-    background: '#f8fafc',
-    surface: '#ffffff',
-    text: '#1f2937',
-    onSurface: '#374151',
-  },
-};
-
 export default function App() {
-  const [tasks, setTasks] = useState([]);
+  const [nowTasks, setNowTasks] = useState([]);
+  const [laterTasks, setLaterTasks] = useState([]);
+  const [activeTab, setActiveTab] = useState('now');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    initializeApp();
+    initDatabase();
+    loadTasks();
+    setLoading(false);
   }, []);
 
-  const initializeApp = async () => {
-    try {
-      initDatabase();
-      loadTasks();
-    } catch (error) {
-      console.error('Error initializing app:', error);
-      Alert.alert('Error', 'Failed to initialize the app');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const loadTasks = () => {
-    try {
-      const tasksData = getTasks();
-      setTasks(tasksData);
-    } catch (error) {
-      console.error('Error loading tasks:', error);
-      Alert.alert('Error', 'Failed to load tasks');
-    }
+    setNowTasks(getTasks('now'));
+    setLaterTasks(getTasks('later'));
   };
 
   const handleAddTask = (input) => {
-    try {
-      const parsedTask = parseTaskInput(input);
-      const task = createTask(parsedTask);
-      
-      addTask(task);
-      loadTasks();
-    } catch (error) {
-      console.error('Error adding task:', error);
-      Alert.alert('Error', error.message || 'Failed to add task');
-    }
+    const parsed = parseTaskInput(input);
+    const task = createTask({ ...parsed, tab: 'now' });
+    addTask(task);
+    loadTasks();
   };
 
   const handleToggleTask = (taskId) => {
-    try {
-      const task = tasks.find(t => t.id === taskId);
-      if (!task) return;
-
-      updateTask(taskId, { completed: !task.completed });
-      loadTasks();
-    } catch (error) {
-      console.error('Error updating task:', error);
-      Alert.alert('Error', 'Failed to update task');
-    }
+    const all = [...nowTasks, ...laterTasks];
+    const task = all.find(t => t.id === taskId);
+    if (!task) return;
+    updateTask(taskId, { completed: !task.completed });
+    loadTasks();
   };
 
   const handleDeleteTask = (taskId) => {
-    try {
-      deleteTask(taskId);
-      loadTasks();
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      Alert.alert('Error', 'Failed to delete task');
-    }
+    deleteTask(taskId);
+    loadTasks();
   };
 
-  const sortedTasks = sortTasks(tasks);
-  const groupedTasks = groupTasksByDate(sortedTasks);
+  const handleReorder = (orderedIds) => {
+    reorderTasks(orderedIds);
+    loadTasks();
+  };
 
-  if (loading) {
-    return (
-      <PaperProvider theme={theme}>
-        <SafeAreaProvider>
-          <SafeAreaView style={styles.container}>
-            <View style={styles.loadingContainer}>
-              {/* You could add a loading spinner here */}
-            </View>
-          </SafeAreaView>
-        </SafeAreaProvider>
-      </PaperProvider>
-    );
-  }
+  const handleSendToTab = (taskId) => {
+    moveTaskToTab(taskId, activeTab === 'now' ? 'later' : 'now');
+    loadTasks();
+  };
+
+  const activeTasks = activeTab === 'now' ? nowTasks : laterTasks;
+  const nowIncomplete = nowTasks.filter(t => !t.completed).length;
+  const laterIncomplete = laterTasks.filter(t => !t.completed).length;
+
+  if (loading) return null;
 
   return (
-    <PaperProvider theme={theme}>
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.container}>
-          <KeyboardAvoidingView 
-            style={styles.container} 
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          >
-            <Header tasks={groupedTasks} />
-            <TaskInput onAddTask={handleAddTask} />
-            <TaskList 
-              tasks={sortedTasks}
-              onToggleTask={handleToggleTask}
-              onDeleteTask={handleDeleteTask}
-            />
-            <StatusBar style="auto" />
-          </KeyboardAvoidingView>
-        </SafeAreaView>
-      </SafeAreaProvider>
-    </PaperProvider>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <KeyboardAvoidingView
+          style={styles.fill}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <Header
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            nowCount={nowIncomplete}
+            laterCount={laterIncomplete}
+          />
+          <TaskInput onAddTask={handleAddTask} />
+          <TaskList
+            tasks={activeTasks}
+            activeTab={activeTab}
+            onToggleTask={handleToggleTask}
+            onDeleteTask={handleDeleteTask}
+            onReorder={handleReorder}
+            onSendToTab={handleSendToTab}
+          />
+          <StatusBar style="dark" />
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  fill: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f5f6f8',
   },
-  loadingContainer: {
+  safe: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f5f6f8',
   },
 });
